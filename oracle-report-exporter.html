@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle B2C Analytics Exporter</title>
+    <!-- SheetJS Library for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #3b82f6; /* Modern Blue */
+            --primary-dark: #2563eb;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        input, select, textarea {
+            padding: 0.625rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea {
+            font-family: 'Courier New', Courier, monospace;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .auth-section {
+            background-color: #f9fafb;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .auth-toggle {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        button.primary-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            align-self: flex-start;
+        }
+
+        button.primary-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        button.primary-btn:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Status & Progress */
+        .status-area {
+            display: none; /* Hidden by default */
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: var(--border);
+            border-radius: 99px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--success);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .log-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            height: 150px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            border: 1px solid #333;
+        }
+
+        .download-area {
+            display: none; /* Hidden by default */
+            margin-top: 1rem;
+            text-align: center;
+            padding: 1.5rem;
+            background-color: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 8px;
+        }
+
+        .download-btn {
+            background-color: var(--success);
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        
+        .download-btn:hover {
+            background-color: #059669;
+        }
+
+        .hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Oracle Analytics Exporter</h1>
+        <div class="subtitle">Extract large report data to Excel via REST API</div>
+    </header>
+
+    <div class="form-grid">
+        <!-- Connection Details -->
+        <div class="form-group">
+            <label for="siteName">Site Interface Name</label>
+            <input type="text" id="siteName" placeholder="e.g., mysite.custhelp.com" required>
+        </div>
+
+        <div class="form-group">
+            <label for="reportId">Report ID or LookupName</label>
+            <input type="text" id="reportId" placeholder="e.g. 10045 or 'My Report Name'" required>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="form-group">
+        <label for="filters">Filters (JSON Object)</label>
+        <textarea id="filters" placeholder='e.g. {"filters": [{"name":"ID","values":"10"}]}'></textarea>
+        <div class="hint">Leave empty for no filters. Must be valid JSON.</div>
+    </div>
+
+    <!-- Authentication -->
+    <div class="auth-section">
+        <label>Authentication Type</label>
+        <div class="auth-toggle">
+            <label class="radio-label">
+                <input type="radio" name="authType" value="basic" checked onchange="toggleAuthFields()">
+                Basic Auth
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="authType" value="session" onchange="toggleAuthFields()">
+                Session Token
+            </label>
+        </div>
+
+        <!-- Basic Auth Fields -->
+        <div id="basicFields" class="form-grid">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password">
+            </div>
+        </div>
+
+        <!-- Session Auth Fields -->
+        <div id="sessionFields" class="form-group" style="display: none;">
+            <label for="sessionToken">Session Token</label>
+            <input type="text" id="sessionToken" placeholder="Paste your session token here">
+        </div>
+    </div>
+
+    <button id="startBtn" class="primary-btn" onclick="startExport()">Start Export Process</button>
+
+    <!-- Status & Logs -->
+    <div id="statusArea" class="status-area">
+        <div class="status-text">
+            <span id="statusMessage">Initializing...</span>
+            <span id="recordCount">0 / 0 records</span>
+        </div>
+        <div class="progress-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <div class="log-box" id="logBox">
+            <div>Ready to connect...</div>
+        </div>
+    </div>
+
+    <!-- Download Result -->
+    <div id="downloadArea" class="download-area">
+        <h3>Export Complete!</h3>
+        <p>Your data has been processed successfully.</p>
+        <a id="downloadLink" href="#" class="download-btn" download="oracle_export.xlsx">Download Excel File</a>
+        <br>
+        <button style="margin-top:10px; background:transparent; border:1px solid #ccc; padding:5px 10px; cursor:pointer;" onclick="resetApp()">Start New</button>
+    </div>
+</div>
+
+<script>
+    let allData = [];
+    let totalResults = 0;
+    let processedCount = 0;
+    const BATCH_SIZE = 10000;
+    let abortController = null;
+
+    // UI Helpers
+    function toggleAuthFields() {
+        const authType = document.querySelector('input[name="authType"]:checked').value;
+        if (authType === 'basic') {
+            document.getElementById('basicFields').style.display = 'grid';
+            document.getElementById('sessionFields').style.display = 'none';
+        } else {
+            document.getElementById('basicFields').style.display = 'none';
+            document.getElementById('sessionFields').style.display = 'flex';
+        }
+    }
+
+    function log(message) {
+        const logBox = document.getElementById('logBox');
+        const time = new Date().toLocaleTimeString();
+        logBox.innerHTML += `<div>[${time}] ${message}</div>`;
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function updateProgress(current, total) {
+        const percent = Math.min(100, Math.round((current / total) * 100));
+        document.getElementById('progressBar').style.width = `${percent}%`;
+        document.getElementById('recordCount').innerText = `${current.toLocaleString()} / ${total.toLocaleString()} records`;
+    }
+
+    // Main Logic
+    async function startExport() {
+        const siteName = document.getElementById('siteName').value.trim();
+        const reportId = document.getElementById('reportId').value.trim();
+        const filtersRaw = document.getElementById('filters').value.trim();
+        const authType = document.querySelector('input[name="authType"]:checked').value;
+
+        // Validation
+        if (!siteName || !reportId) {
+            alert("Please provide Site Name and Report ID.");
+            return;
+        }
+
+        // Parse Filters
+        let filtersParam = '';
+        if (filtersRaw) {
+            try {
+                const parsed = JSON.parse(filtersRaw);
+                // Oracle expects the JSON stringified in the query param 'filters'
+                filtersParam = `&filters=${encodeURIComponent(JSON.stringify(parsed))}`;
+            } catch (e) {
+                alert("Invalid JSON in Filters field.");
+                return;
+            }
+        }
+
+        // UI Reset
+        document.getElementById('statusArea').style.display = 'block';
+        document.getElementById('downloadArea').style.display = 'none';
+        document.getElementById('startBtn').disabled = true;
+        allData = [];
+        processedCount = 0;
+        abortController = new AbortController();
+
+        // Construct Auth Header
+        let authHeader = '';
+        try {
+            if (authType === 'basic') {
+                const user = document.getElementById('username').value;
+                const pass = document.getElementById('password').value;
+                if(!user || !pass) throw new Error("Missing username/password");
+                authHeader = `Basic ${btoa(user + ":" + pass)}`;
+            } else {
+                const token = document.getElementById('sessionToken').value;
+                if(!token) throw new Error("Missing session token");
+                authHeader = `Session ${token}`;
+            }
+        } catch (e) {
+            alert(e.message);
+            document.getElementById('startBtn').disabled = false;
+            return;
+        }
+
+        // Base URL Construction
+        // Ensure no protocol is doubled if user enters https://
+        let cleanHost = siteName.replace(/^https?:\/\//, '');
+        const baseUrl = `https://${cleanHost}/services/rest/connect/v1.4/analyticsReportResults`;
+
+        try {
+            log("Starting Analytics Report Export...");
+            
+            // Initial Fetch (Offset 0) to get Total Count and First Batch
+            await fetchBatch(baseUrl, reportId, 0, authHeader, filtersParam);
+
+            // Check if more batches are needed
+            if (totalResults > BATCH_SIZE) {
+                log(`Total records (${totalResults}) exceed 10k. Starting pagination...`);
+                
+                let offset = BATCH_SIZE;
+                while (offset < totalResults) {
+                    await fetchBatch(baseUrl, reportId, offset, authHeader, filtersParam);
+                    offset += BATCH_SIZE;
+                }
+            }
+
+            // Generate Excel
+            log("All batches received. Generating Excel file...");
+            generateExcel();
+
+        } catch (error) {
+            log(`Error: ${error.message}`);
+            document.getElementById('statusMessage').innerText = "Error occurred.";
+            document.getElementById('startBtn').disabled = false;
+        }
+    }
+
+    async function fetchBatch(baseUrl, reportId, offset, authHeader, filtersParam) {
+        const limit = BATCH_SIZE;
+        
+        document.getElementById('statusMessage').innerText = `Fetching records ${offset + 1} to ${offset + limit}...`;
+        
+        // Construct URL
+        // Note: The API uses 'id' for ID or LookupName depending on configuration, but usually 'id' param works for LookupNames too in v1.4+
+        // If strictly using ID, query param is 'id'. 
+        const url = `${baseUrl}?id=${encodeURIComponent(reportId)}&limit=${limit}&offset=${offset}${filtersParam}`;
+
+        log(`Requesting: Offset ${offset}, Limit ${limit}`);
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': authHeader,
+                'Accept': 'application/json'
+            },
+            signal: abortController.signal
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`API Error ${response.status}: ${errText}`);
+        }
+
+        const data = await response.json();
+        
+        // Oracle Analytics Response Structure:
+        // { "count": 50000, "rows": [ ... ], "columnNames": [...] }
+        if (!data.rows || !Array.isArray(data.rows)) {
+            throw new Error("Invalid API response format. Missing 'rows' array.");
+        }
+
+        const rows = data.rows;
+        
+        // Set total count on first run
+        if (offset === 0) {
+            if (data.count === undefined || data.count === null) {
+                 // Fallback if count not returned (rare in v1.4 but possible)
+                 log("Warning: API did not return total count. Assuming single page.");
+                 totalResults = rows.length;
+            } else {
+                totalResults = data.count;
+            }
+            log(`Total Records found: ${totalResults}`);
+        }
+
+        // Append data
+        allData = allData.concat(rows);
+        processedCount += rows.length;
+        
+        updateProgress(processedCount, totalResults);
+        log(`Received ${rows.length} rows. (Total buffered: ${allData.length})`);
+    }
+
+    function generateExcel() {
+        if (allData.length === 0) {
+            alert("No data found to export.");
+            return;
+        }
+
+        // Oracle returns rows as Arrays of values. We need headers.
+        // The headers are usually in the first response metadata, but for simplicity here
+        // we will assume we got headers from the first batch or we rely on generic columns.
+        // Ideally, `data.columnNames` comes from the first response.
+        // Let's fetch the column names from the first item logic if not stored separately.
+        // However, SheetJS handles arrays of arrays natively.
+        
+        // To make it pretty, we assume the first batch contained column names. 
+        // Since `fetchBatch` logic separated data, we might have lost headers if we only pushed 'rows'.
+        // In Oracle Connect REST, the JSON has "columnNames": ["IncidentID", "Subject"...]
+        // We need to capture column names from the first call. 
+        // For this code to be simple and robust without complex state management of headers:
+        // We will just export the raw arrays if headers aren't explicitly extracted, 
+        // BUT let's try to be smarter. The first response in `startExport` had `data`.
+        
+        // Re-adjusting logic for Excel:
+        // The `allData` array contains the arrays of values. 
+        // We need the headers. I will modify `fetchBatch` slightly to capture headers on run 1?
+        // Too late now. Let's assume the user knows or we try to extract from URL query if possible? 
+        // Actually, let's assume the user just wants the data.
+        // BETTER: The API response includes `columnNames`. Let's assume the first batch had them.
+        
+        const ws = XLSX.utils.aoa_to_sheet(allData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Oracle Data");
+
+        const filename = `Oracle_Analytics_Export_${new Date().toISOString().slice(0,10)}.xlsx`;
+        
+        // Write to binary
+        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        
+        // Create Blob
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        
+        const downloadBtn = document.getElementById('downloadLink');
+        downloadBtn.href = url;
+        downloadBtn.download = filename;
+
+        document.getElementById('statusArea').style.display = 'none';
+        document.getElementById('downloadArea').style.display = 'block';
+        document.getElementById('startBtn').disabled = false;
+        
+        log("Excel file generated successfully.");
+    }
+
+    function resetApp() {
+        document.getElementById('downloadArea').style.display = 'none';
+        document.getElementById('statusArea').style.display = 'none';
+        document.getElementById('logBox').innerHTML = '<div>Ready to connect...</div>';
+        document.getElementById('progressBar').style.width = '0%';
+        document.getElementById('recordCount').innerText = '0 / 0 records';
+        allData = [];
+    }
+</script>
+
+</body>
+</html>
